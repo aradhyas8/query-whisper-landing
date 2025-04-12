@@ -1,15 +1,15 @@
+
 import { Navigate } from "react-router-dom";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { data: session, status } = useSession();
-  const loading = status === "loading";
+  const { isAuthenticated, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-white rounded-full"></div>
@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  if (!session) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

@@ -1,6 +1,6 @@
+
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { signIn } from "next-auth/react";
+import { Link, Navigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Logo from "@/components/Logo";
+import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
@@ -27,7 +28,7 @@ const formSchema = z.object({
 });
 
 const Login = () => {
-  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -42,40 +43,26 @@ const Login = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true);
-      const result = await signIn('credentials', {
-        email: values.email,
-        password: values.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        toast.error("Invalid credentials");
-        return;
-      }
-
+      await login(values.email, values.password);
       toast.success("Login successful");
-      navigate('/app'); // Redirect to dashboard
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Failed to login. Please try again.");
+      toast.error("Failed to login. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
   }
 
-  const handleSocialLogin = async (provider: string) => {
-    try {
-      setIsLoading(true);
-      await signIn(provider.toLowerCase(), { callbackUrl: '/app' });
-    } catch (error) {
-      console.error(`${provider} login failed:`, error);
-      toast.error(`${provider} login failed`);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSocialLogin = (provider: string) => {
+    toast.info(`${provider} login is not yet implemented`);
   };
 
   const toggleShowPassword = () => setShowPassword(prev => !prev);
+
+  // Redirect if already logged in
+  if (isAuthenticated) {
+    return <Navigate to="/app" replace />;
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background p-4">
@@ -116,7 +103,7 @@ const Login = () => {
             
             <div className="flex items-center gap-4">
               <Separator className="shrink" />
-              <span className="text-xs text-muted-foreground">OR</span>
+              <span className="text-xs text-muted-foreground">OR CONTINUE WITH</span>
               <Separator className="shrink" />
             </div>
             
@@ -192,12 +179,12 @@ const Login = () => {
             </Form>
           </CardContent>
           
-          <CardFooter>
-            <p className="text-center text-sm w-full">
+          <CardFooter className="flex justify-center">
+            <p className="text-center text-sm">
               Don't have an account?{" "}
-              <a href="/register" className="text-white hover:underline">
+              <Link to="/register" className="text-white hover:underline">
                 Register
-              </a>
+              </Link>
             </p>
           </CardFooter>
         </Card>
