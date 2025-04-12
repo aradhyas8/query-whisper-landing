@@ -112,7 +112,7 @@ const Register = () => {
             
             <div className="flex items-center gap-4">
               <Separator className="shrink" />
-              <span className="text-xs text-muted-foreground">OR CONTINUE WITH</span>
+              <span className="text-xs text-muted-foreground">OR</span>
               <Separator className="shrink" />
             </div>
             
