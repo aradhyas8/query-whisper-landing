@@ -14,6 +14,9 @@ const Navbar = () => {
           <a href="#features" className="text-gray-400 hover:text-white transition-colors">
             Features
           </a>
+          <Link to="/pricing" className="text-gray-400 hover:text-white transition-colors">
+            Pricing
+          </Link>
           <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors">
             How It Works
           </a>

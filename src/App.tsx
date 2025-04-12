@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
+import Contact from "./pages/Contact";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/app" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

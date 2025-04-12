@@ -68,6 +68,8 @@ export default {
 					lightgray: '#CCCCCC',
 					darkgray: '#222222',
 					background: '#1A1A1A',
+					purple: '#8B5CF6',
+					darkpurple: '#7C3AED'
 				}
 			},
 			borderRadius: {
