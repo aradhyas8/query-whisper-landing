@@ -18,6 +18,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import FadeIn from '@/components/FadeIn';
+import DatabaseSidebar from '@/components/DatabaseSidebar';
+import { mockDatabases } from '@/data/mockDatabases';
+import { DatabaseConnection, ChatThread } from '@/types/database';
 
 // Types for messages
 interface Message {
@@ -39,6 +42,7 @@ const Dashboard = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeThread, setActiveThread] = useState<{ databaseId: string; threadId: string } | null>(null);
 
   // Function to handle sending messages
   const handleSendMessage = async () => {
@@ -84,12 +88,55 @@ const Dashboard = () => {
     }
   };
 
+  // Handle thread selection
+  const handleSelectThread = (databaseId: string, threadId: string) => {
+    setActiveThread({ databaseId, threadId });
+    
+    // Find the selected database and thread
+    const selectedDb = mockDatabases.find(db => db.id === databaseId);
+    const selectedThread = selectedDb?.threads.find(thread => thread.id === threadId);
+    
+    if (selectedThread) {
+      // Load thread messages (simulated)
+      setMessages([
+        {
+          id: '1',
+          content: `You're now viewing the "${selectedThread.name}" thread from ${selectedDb?.name}.`,
+          sender: 'ai',
+          timestamp: new Date(),
+        },
+        {
+          id: '2',
+          content: selectedThread.lastMessage,
+          sender: 'user',
+          timestamp: selectedThread.timestamp,
+        },
+        {
+          id: '3',
+          content: `Here's the response to your query: "${selectedThread.lastMessage}"`,
+          sender: 'ai',
+          timestamp: new Date(selectedThread.timestamp.getTime() + 10000), // 10 seconds after
+        },
+      ]);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-queryio-background">
       <SidebarProvider>
         <Sidebar>
           <SidebarContent>
             <SidebarGroup>
+              <SidebarGroupContent>
+                <DatabaseSidebar 
+                  databases={mockDatabases}
+                  onSelectThread={handleSelectThread}
+                  activeThread={activeThread}
+                />
+              </SidebarGroupContent>
+            </SidebarGroup>
+            
+            <SidebarGroup className="mt-auto">
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
