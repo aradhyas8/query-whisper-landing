@@ -4,7 +4,7 @@ import { Link, Navigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff, LogIn, Github, Chrome } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -52,6 +53,10 @@ const Login = () => {
     }
   }
 
+  const handleSocialLogin = (provider: string) => {
+    toast.info(`${provider} login is not yet implemented`);
+  };
+
   const toggleShowPassword = () => setShowPassword(prev => !prev);
 
   // Redirect if already logged in
@@ -72,7 +77,36 @@ const Login = () => {
             <CardDescription className="text-center">Login to your account to continue</CardDescription>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="space-y-6">
+            {/* Social Login Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => handleSocialLogin("GitHub")}
+                className="w-full"
+                type="button"
+              >
+                <Github className="mr-2 h-4 w-4" />
+                GitHub
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => handleSocialLogin("Google")}
+                className="w-full"
+                type="button"
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                Google
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Separator className="shrink" />
+              <span className="text-xs text-muted-foreground">OR CONTINUE WITH</span>
+              <Separator className="shrink" />
+            </div>
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
