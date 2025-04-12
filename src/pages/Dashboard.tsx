@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Loader2, Send, MessageSquare, History, Settings } from 'lucide-react';
+import { Loader2, Send, MessageSquare, History, Settings, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -17,10 +17,19 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import FadeIn from '@/components/FadeIn';
 import DatabaseSidebar from '@/components/DatabaseSidebar';
 import { mockDatabases } from '@/data/mockDatabases';
 import { DatabaseConnection, ChatThread } from '@/types/database';
+import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 // Types for messages
 interface Message {
@@ -121,6 +130,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleLogout = () => {
+    // Mock logout functionality
+    toast.success("Logged out successfully");
+    // In a real app, this would redirect to login or call an auth logout function
+  };
+
   return (
     <div className="flex min-h-screen bg-queryio-background">
       <SidebarProvider>
@@ -176,10 +191,29 @@ const Dashboard = () => {
           <header className="flex items-center justify-between p-4 border-b border-border">
             <h1 className="text-xl font-semibold">Dashboard</h1>
             <div className="flex items-center gap-2">
-              <Avatar>
-                <AvatarImage src="/placeholder.svg" alt="User" />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full" aria-label="User menu">
+                    <Avatar>
+                      <AvatarImage src="/placeholder.svg" alt="User" />
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/app/settings" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
