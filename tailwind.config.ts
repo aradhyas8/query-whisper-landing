@@ -64,8 +64,10 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				queryio: {
-					purple: '#9b87f5',
-					darkpurple: '#7E69AB',
+					white: '#FFFFFF',
+					lightgray: '#CCCCCC',
+					darkgray: '#222222',
+					background: '#1A1A1A',
 				}
 			},
 			borderRadius: {

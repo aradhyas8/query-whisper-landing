@@ -10,7 +10,7 @@ import FadeIn from '@/components/FadeIn';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-[#1A1F2C] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-queryio-background text-white overflow-x-hidden">
       <Navbar />
       
       <FadeIn>
