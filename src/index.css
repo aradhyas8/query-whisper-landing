@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,26 +7,34 @@
 
 @layer base {
   :root {
-    --background: 0 0% 10%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 13%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 100%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
     --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 10%;
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 15%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 13%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 13%;
     --muted-foreground: 0 0% 70%;
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 80%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 70%;
     --radius: 0.5rem;
+    
+    /* Syntax highlighting colors for query results */
+    --syntax-keyword: 280 75% 60%;
+    --syntax-string: 5 65% 55%;
+    --syntax-number: 200 100% 60%;
+    --syntax-function: 35 100% 50%;
+    --syntax-comment: 0 0% 50%;
+    --syntax-identifier: 220 100% 70%;
   }
 }
 
@@ -36,17 +44,45 @@
   }
   
   body {
-    @apply bg-[#1A1A1A] text-foreground antialiased;
+    @apply bg-[#121212] text-foreground antialiased;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
 
   html {
     @apply scroll-smooth;
   }
+  
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  
+  .code-keyword {
+    @apply text-[hsl(var(--syntax-keyword))];
+  }
+  
+  .code-string {
+    @apply text-[hsl(var(--syntax-string))];
+  }
+  
+  .code-number {
+    @apply text-[hsl(var(--syntax-number))];
+  }
+  
+  .code-function {
+    @apply text-[hsl(var(--syntax-function))];
+  }
 }
 
 @layer utilities {
   .text-gradient {
     @apply bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent animate-gradient-flow;
+  }
+  
+  .glass-effect {
+    @apply bg-black/40 backdrop-blur-lg border border-white/10;
+  }
+  
+  .card-highlight {
+    @apply border border-white/10 bg-[#1A1A1A] transition-all duration-300 hover:bg-[#1D1D1D] hover:border-white/20;
   }
 }

@@ -67,7 +67,9 @@ export default {
 					white: '#FFFFFF',
 					lightgray: '#CCCCCC',
 					darkgray: '#222222',
-					background: '#1A1A1A',
+					background: '#121212',
+					darkbg: '#0D0D0D',
+					border: '#1E1E1E',
 					purple: '#8B5CF6',
 					darkpurple: '#7C3AED'
 				}
@@ -106,6 +108,27 @@ export default {
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
+				mono: ['"JetBrains Mono"', 'monospace'],
+			},
+			typography: {
+				DEFAULT: {
+					css: {
+						pre: {
+							backgroundColor: '#0D0D0D',
+							color: '#E0E0E0',
+							borderRadius: '0.375rem',
+							padding: '1rem',
+							border: '1px solid rgba(255, 255, 255, 0.1)',
+						},
+						code: {
+							backgroundColor: '#161616',
+							color: '#E0E0E0',
+							borderRadius: '0.25rem',
+							padding: '0.125rem 0.25rem',
+							border: '1px solid rgba(255, 255, 255, 0.1)',
+						},
+					},
+				},
 			},
 		}
 	},
