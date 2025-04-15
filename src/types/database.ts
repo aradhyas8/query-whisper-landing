@@ -11,4 +11,5 @@ export interface DatabaseConnection {
   name: string;
   type: 'postgres' | 'mysql' | 'mongodb' | 'sqlite';
   threads: ChatThread[];
+  isDefault?: boolean; // Added to mark connections that cannot be deleted
 }

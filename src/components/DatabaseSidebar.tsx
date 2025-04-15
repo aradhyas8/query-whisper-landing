@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Plus, Database, MessageSquare } from 'lucide-react';
+import { Plus, Database, MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
@@ -49,6 +50,7 @@ interface DatabaseSidebarProps {
   onSelectThread: (databaseId: string, threadId: string) => void;
   activeThread?: { databaseId: string; threadId: string } | null;
   onConnectionAdded?: (connection: DatabaseConnection) => void;
+  onConnectionDeleted?: (connectionId: string) => void; // New prop for handling deletion
 }
 
 // Update the form schema to match our API
@@ -69,10 +71,12 @@ const DatabaseSidebar = ({
   databases, 
   onSelectThread,
   activeThread,
-  onConnectionAdded
+  onConnectionAdded,
+  onConnectionDeleted // Add the new prop
 }: DatabaseSidebarProps) => {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -87,6 +91,38 @@ const DatabaseSidebar = ({
       ssl: true,
     },
   });
+
+  // Handler for deleting a database connection
+  const handleDeleteConnection = async (connectionId: string, event: React.MouseEvent) => {
+    // Stop event propagation to prevent expanding/collapsing the accordion item
+    event.stopPropagation();
+    
+    try {
+      // Call the API to delete the connection
+      await api.delete(`/api/connections/${connectionId}`);
+      
+      toast.success("Database connection removed successfully");
+      
+      // Call the callback if provided
+      if (onConnectionDeleted) {
+        onConnectionDeleted(connectionId);
+      }
+    } catch (error) {
+      console.error('Error deleting database connection:', error);
+      let errorMessage = "Failed to delete database connection";
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
+    }
+  };
+
+  // Handle accordion state to manage expanded items
+  const handleAccordionChange = (value: string[]) => {
+    setExpandedItems(value);
+  };
 
   async function onSubmit(data: FormValues) {
     setIsSubmitting(true);
@@ -306,13 +342,33 @@ const DatabaseSidebar = ({
             <p className="text-sm mt-1">Add a new connection to get started.</p>
           </div>
         ) : (
-          <Accordion type="multiple" className="w-full px-1">
+          <Accordion 
+            type="multiple" 
+            className="w-full px-1"
+            value={expandedItems}
+            onValueChange={handleAccordionChange}
+          >
             {databases.map((db) => (
               <AccordionItem key={db.id} value={db.id} className="border-b-0">
-                <AccordionTrigger className="py-2 px-3 text-sm font-medium hover:bg-muted/50 hover:no-underline rounded-md">
-                  <div className="flex items-center">
-                    <Database className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span>{db.name}</span>
+                <AccordionTrigger className="py-2 px-3 text-sm font-medium hover:bg-muted/50 hover:no-underline rounded-md group">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <Database className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{db.name}</span>
+                    </div>
+                    
+                    {/* Delete button */}
+                    {!db.isDefault && ( // Only show delete button for non-default databases
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-8"
+                        onClick={(e) => handleDeleteConnection(db.id, e)}
+                        aria-label={`Delete ${db.name} connection`}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>

@@ -70,6 +70,28 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Default dummy database that will be available for all users
+const DUMMY_DATABASE: DatabaseConnection = {
+  id: 'demo-db-123',
+  name: 'Demo Database',
+  type: 'postgresql',
+  isDefault: true, // Mark as default so it can't be deleted
+  threads: [
+    {
+      id: 'thread-demo-db-1',
+      name: 'Sample Query Thread',
+      lastMessage: 'Show me all users in the system',
+      timestamp: new Date(Date.now() - 1000 * 60 * 30) // 30 minutes ago
+    },
+    {
+      id: 'thread-demo-db-2',
+      name: 'Product Analysis',
+      lastMessage: 'Count products by category',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60) // 1 hour ago
+    }
+  ]
+};
+
 const Dashboard = () => {
   const { logout } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
@@ -104,6 +126,7 @@ const Dashboard = () => {
     },
   });
 
+  // Fetch databases from the API and add the dummy database
   useEffect(() => {
     fetchDatabases();
   }, []);
@@ -111,7 +134,9 @@ const Dashboard = () => {
   const fetchDatabases = async () => {
     setIsLoadingDatabases(true);
     try {
+      // Fetch user's databases from the API
       const response = await api.get('/api/connections');
+      
       // Transform the API response to match the DatabaseConnection structure
       const connectionsData: DatabaseConnection[] = response.data.map((conn: any) => {
         // Generate some placeholder threads for each connection
@@ -132,10 +157,14 @@ const Dashboard = () => {
         };
       });
       
-      setDatabases(connectionsData);
+      // Add the dummy database as the first item
+      setDatabases([DUMMY_DATABASE, ...connectionsData]);
     } catch (error) {
       console.error('Error fetching database connections:', error);
       toast.error('Failed to load your database connections');
+      
+      // If there's an error fetching databases, at least show the dummy one
+      setDatabases([DUMMY_DATABASE]);
     } finally {
       setIsLoadingDatabases(false);
     }
@@ -306,8 +335,29 @@ SELECT * FROM planets WHERE name = 'Earth';
     }
   };
 
+  // Handle adding a new database connection
   const handleConnectionAdded = (newConnection: DatabaseConnection) => {
     setDatabases(prev => [...prev, newConnection]);
+  };
+
+  // Handle deleting a database connection
+  const handleConnectionDeleted = (connectionId: string) => {
+    setDatabases(prev => prev.filter(db => db.id !== connectionId));
+    
+    // If the active thread was in the deleted database, clear it
+    if (activeThread && activeThread.databaseId === connectionId) {
+      setActiveThread(null);
+      // Reset messages to welcome message
+      setMessages([
+        {
+          id: '1',
+          content: 'Welcome to Query.io! Ask me anything about your database.',
+          sender: 'ai',
+          timestamp: new Date(),
+          type: 'text',
+        },
+      ]);
+    }
   };
 
   // Function to handle adding a new connection
@@ -581,6 +631,7 @@ SELECT * FROM planets WHERE name = 'Earth';
                     onSelectThread={handleSelectThread}
                     activeThread={activeThread}
                     onConnectionAdded={handleConnectionAdded}
+                    onConnectionDeleted={handleConnectionDeleted}
                   />
                 )}
               </SidebarGroupContent>
@@ -626,7 +677,7 @@ SELECT * FROM planets WHERE name = 'Earth';
           <header className="flex items-center justify-between p-4 border-b border-[#1E1E1E] bg-[#121212]">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-medium tracking-tight">Databases</h1>
-              <Badge variant="outline" className="bg-[#1A1A1A] text-[#A0A0A0]">Connection 3</Badge>
+              <Badge variant="outline" className="bg-[#1A1A1A] text-[#A0A0A0]">Connection {databases.length}</Badge>
             </div>
             <div className="flex items-center gap-2">
               <DropdownMenu>
