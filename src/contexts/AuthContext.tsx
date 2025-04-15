@@ -1,9 +1,12 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User as FirebaseUser,
   signInWithEmailAndPassword, 
   signInWithPopup,
+  createUserWithEmailAndPassword,
+  updateProfile,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
@@ -24,10 +27,12 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   // Placeholder for future GitHub implementation
   loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
+  getFirebaseToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,6 +83,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const register = async (name: string, email: string, password: string) => {
+    try {
+      setIsLoading(true);
+      // Create the user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update the user's profile with their name
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: name
+        });
+      }
+      
+      toast.success('Registration successful');
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      toast.error(error.message || 'Failed to register');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const loginWithGoogle = async () => {
     try {
       setIsLoading(true);
@@ -112,14 +141,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const getFirebaseToken = async (): Promise<string | null> => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return null;
+      
+      return await currentUser.getIdToken(true);
+    } catch (error) {
+      console.error("Error getting Firebase token:", error);
+      return null;
+    }
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
     isLoading,
     login,
+    register,
     loginWithGoogle,
     loginWithGithub,
-    logout
+    logout,
+    getFirebaseToken
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

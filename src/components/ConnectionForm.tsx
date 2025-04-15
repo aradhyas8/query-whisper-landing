@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,6 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { DatabaseConnection } from '@/types/database';
+import api from '@/utils/api';
 
 // Validation schema mirroring backend, but potentially adjusted for frontend needs
 const connectionFormSchema = z.object({
@@ -29,17 +32,22 @@ type ConnectionFormValues = z.infer<typeof connectionFormSchema>;
 interface ConnectionFormProps {
   onSuccess?: () => void; // Optional callback on successful submission
   onCancel?: () => void; // Optional callback for cancellation
+  connection?: DatabaseConnection | null; // Optional connection data for editing
 }
 
-export const ConnectionForm: React.FC<ConnectionFormProps> = ({ onSuccess, onCancel }) => {
+export const ConnectionForm: React.FC<ConnectionFormProps> = ({ 
+  onSuccess, 
+  onCancel,
+  connection 
+}) => {
   const { getFirebaseToken } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ConnectionFormValues>({
     resolver: zodResolver(connectionFormSchema),
     defaultValues: {
-      name: '',
-      type: 'postgresql', // Default type
+      name: connection?.name || '',
+      type: (connection?.type as any) || 'postgresql', // Type cast since types might not match exactly
       host: '',
       port: undefined, // Default to empty for number input
       database: '',
@@ -48,6 +56,24 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({ onSuccess, onCan
       ssl: false,
     },
   });
+
+  // Update form values when editing an existing connection
+  useEffect(() => {
+    if (connection) {
+      // We would typically fetch the connection details here
+      // For now, we just pre-fill what we have
+      form.reset({
+        name: connection.name,
+        type: (connection.type as any),
+        host: '', // These would come from the API
+        port: undefined,
+        database: '',
+        username: '',
+        password: '',
+        ssl: false,
+      });
+    }
+  }, [connection, form]);
 
   const onSubmit = async (data: ConnectionFormValues) => {
     setIsLoading(true);
@@ -61,32 +87,30 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({ onSuccess, onCan
         throw new Error('Authentication token not found.');
       }
 
-      const response = await fetch('/api/connections', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      let response;
+      if (connection) {
+        // Update existing connection
+        response = await api.put(`/api/connections/${connection.id}`, {
           ...restData,
-          port: Number(port) // Ensure port is sent as a number
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+          port: Number(port)
+        });
+        toast.success('Database connection updated successfully!');
+      } else {
+        // Create new connection
+        response = await api.post('/api/connections', {
+          ...restData,
+          port: Number(port)
+        });
+        toast.success('Database connection created successfully!');
       }
 
-      const result = await response.json();
-      console.log('Connection created:', result);
-      toast.success('Database connection created successfully!');
+      console.log('Connection response:', response.data);
       form.reset(); // Reset form after successful submission
       onSuccess?.(); // Call success callback if provided
 
     } catch (error) {
-      console.error('Failed to create connection:', error);
-      toast.error(`Failed to create connection: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Failed to save connection:', error);
+      toast.error(`Failed to ${connection ? 'update' : 'create'} connection: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -224,7 +248,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({ onSuccess, onCan
           )}
         />
 
-
         <div className="flex justify-end space-x-2 pt-4">
           {onCancel && (
              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
@@ -233,10 +256,10 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({ onSuccess, onCan
           )}
           <Button type="submit" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Create Connection
+            {connection ? 'Update Connection' : 'Create Connection'}
           </Button>
         </div>
       </form>
     </Form>
   );
-}; 
+};

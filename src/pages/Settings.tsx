@@ -20,7 +20,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import FadeIn from '@/components/FadeIn';
 
-import { AddConnectionDialog } from '@/components/settings/AddConnectionDialog';
 import { ProfileSection } from '@/components/settings/ProfileSection';
 import { SubscriptionSection } from '@/components/settings/SubscriptionSection';
 import { BillingSection } from '@/components/settings/BillingSection';
