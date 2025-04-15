@@ -74,7 +74,7 @@ type FormValues = z.infer<typeof formSchema>;
 const DUMMY_DATABASE: DatabaseConnection = {
   id: 'demo-db-123',
   name: 'Demo Database',
-  type: 'postgresql',
+  type: 'postgres',
   isDefault: true, // Mark as default so it can't be deleted
   threads: [
     {
