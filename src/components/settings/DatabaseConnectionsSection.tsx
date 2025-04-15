@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,20 +8,20 @@ import { Badge } from '@/components/ui/badge';
 import api from '@/utils/api';
 import axios from 'axios';
 import { AddConnectionDialog } from './AddConnectionDialog';
+import { DatabaseConnection } from '@/types/database';
 
-interface DatabaseConnection {
-  id: string;
-  name: string;
-  type: 'postgres' | 'mysql' | 'mongodb' | 'sqlite';
+// Local interface with all required properties from the imported type
+interface DatabaseConnectionWithStatus extends Omit<DatabaseConnection, 'threads'> {
   status: 'connected' | 'disconnected' | 'error';
   host: string;
+  threads: []; // Adding empty threads array to satisfy the type requirement
 }
 
 export const DatabaseConnectionsSection = () => {
-  const [connections, setConnections] = useState<DatabaseConnection[]>([]);
+  const [connections, setConnections] = useState<DatabaseConnectionWithStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddConnectionDialogOpen, setIsAddConnectionDialogOpen] = useState(false);
-  const [editingConnection, setEditingConnection] = useState<DatabaseConnection | null>(null);
+  const [editingConnection, setEditingConnection] = useState<DatabaseConnectionWithStatus | null>(null);
   const [removingConnection, setRemovingConnection] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -40,7 +39,8 @@ export const DatabaseConnectionsSection = () => {
         name: conn.name,
         type: conn.type,
         status: 'connected', // You might need to add a status check endpoint
-        host: conn.host || '[encrypted]'
+        host: conn.host || '[encrypted]',
+        threads: [] // Initialize with empty threads array to satisfy type requirements
       }));
       setConnections(connectionsData);
     } catch (error) {
@@ -70,7 +70,7 @@ export const DatabaseConnectionsSection = () => {
     return <DatabaseIcon className="h-4 w-4" />;
   };
 
-  const handleEditConnection = (connection: DatabaseConnection) => {
+  const handleEditConnection = (connection: DatabaseConnectionWithStatus) => {
     setEditingConnection(connection);
     setIsAddConnectionDialogOpen(true);
   };
