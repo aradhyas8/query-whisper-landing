@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { z } from "zod";
@@ -28,7 +27,7 @@ const formSchema = z.object({
 });
 
 const Login = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle, loginWithGithub, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -53,8 +52,21 @@ const Login = () => {
     }
   }
 
-  const handleSocialLogin = (provider: string) => {
-    toast.info(`${provider} login is not yet implemented`);
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      setIsLoading(true);
+      if (provider === "Google") {
+        await loginWithGoogle();
+      } else if (provider === "GitHub") {
+        // Placeholder for future GitHub implementation
+        await loginWithGithub();
+      }
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      toast.error(`Failed to login with ${provider}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleShowPassword = () => setShowPassword(prev => !prev);
@@ -85,6 +97,7 @@ const Login = () => {
                 onClick={() => handleSocialLogin("GitHub")}
                 className="w-full"
                 type="button"
+                disabled={isLoading}
               >
                 <Github className="mr-2 h-4 w-4" />
                 GitHub
@@ -95,6 +108,7 @@ const Login = () => {
                 onClick={() => handleSocialLogin("Google")}
                 className="w-full"
                 type="button"
+                disabled={isLoading}
               >
                 <Chrome className="mr-2 h-4 w-4" />
                 Google

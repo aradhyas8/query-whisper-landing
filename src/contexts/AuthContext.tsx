@@ -1,11 +1,22 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  User as FirebaseUser,
+  signInWithEmailAndPassword, 
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged,
+  getAuth
+} from 'firebase/auth';
+import { auth } from '../config/firebase';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
-  name: string;
-  email: string;
+  name: string | null;
+  email: string | null;
+  photoURL: string | null;
 }
 
 interface AuthContextType {
@@ -13,85 +24,92 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  loginWithGoogle: () => Promise<void>;
+  // Placeholder for future GitHub implementation
+  loginWithGithub: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const mapFirebaseUser = (firebaseUser: FirebaseUser): User => ({
+  id: firebaseUser.uid,
+  name: firebaseUser.displayName,
+  email: firebaseUser.email,
+  photoURL: firebaseUser.photoURL,
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Check if user is logged in on mount
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        // In a real app, we would check with the server
-        // For now, we'll just check localStorage
-        const storedUser = localStorage.getItem('user');
-        
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setIsLoading(true);
+      if (firebaseUser) {
+        // Get the ID token for backend communication
+        const token = await firebaseUser.getIdToken();
+        // Store the token in localStorage for API calls
+        localStorage.setItem('authToken', token);
+        setUser(mapFirebaseUser(firebaseUser));
+      } else {
+        localStorage.removeItem('authToken');
         setUser(null);
-      } finally {
-        setIsLoading(false);
       }
-    };
+      setIsLoading(false);
+    });
 
-    checkAuthStatus();
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    
     try {
-      // This would be a real API call in a production app
-      // For demo purposes, we'll simulate a successful login
-      const mockUser = {
-        id: '1',
-        name: 'Demo User',
-        email: email,
-      };
-      
-      // Store user in localStorage
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
+      setIsLoading(true);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Login successful');
       navigate('/app');
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw new Error('Login failed');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error(error.message || 'Failed to login');
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true);
-    
+  const loginWithGoogle = async () => {
     try {
-      // This would be a real API call in a production app
-      // For demo purposes, we'll just simulate a registration
-      console.log('Registering:', { name, email });
-      
-      // In real app, we'd redirect to login or directly log the user in
-      navigate('/login');
-    } catch (error) {
-      console.error('Registration failed:', error);
-      throw new Error('Registration failed');
+      setIsLoading(true);
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      toast.success('Login successful');
+      navigate('/app');
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      toast.error(error.message || 'Failed to login with Google');
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    navigate('/login');
+  // Placeholder for future GitHub implementation
+  const loginWithGithub = async () => {
+    toast.info('GitHub login will be implemented soon');
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('authToken');
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      toast.error(error.message || 'Failed to logout');
+      throw error;
+    }
   };
 
   const value = {
@@ -99,7 +117,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated: !!user,
     isLoading,
     login,
-    register,
+    loginWithGoogle,
+    loginWithGithub,
     logout
   };
 

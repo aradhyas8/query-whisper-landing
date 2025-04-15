@@ -1,11 +1,27 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Logo from './Logo';
 import { Button } from './ui/button';
 import { Github, Twitter, Linkedin } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAuthAction = async () => {
+    if (isAuthenticated) {
+      try {
+        await logout();
+        // Navigation is handled in AuthContext
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <header className="w-full py-4 border-b border-gray-800">
       <div className="container flex items-center justify-between">
@@ -23,16 +39,21 @@ const Navbar = () => {
           <a href="#testimonials" className="text-gray-400 hover:text-white transition-colors">
             Testimonials
           </a>
-          <Link to="/login">
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-              Login
-            </Button>
-          </Link>
-          <Link to="/register">
-            <Button variant="secondary" size="sm" className="bg-queryio-purple text-white hover:bg-queryio-darkpurple">
-              Get Started
-            </Button>
-          </Link>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-400 hover:text-white"
+            onClick={handleAuthAction}
+          >
+            {isAuthenticated ? 'Logout' : 'Login'}
+          </Button>
+          {!isAuthenticated && (
+            <Link to="/register">
+              <Button variant="secondary" size="sm" className="bg-queryio-purple text-white hover:bg-queryio-darkpurple">
+                Get Started
+              </Button>
+            </Link>
+          )}
         </nav>
         <div className="md:hidden">
           <Button variant="ghost" size="sm">

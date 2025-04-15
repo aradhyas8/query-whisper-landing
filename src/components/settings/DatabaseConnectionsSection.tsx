@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Edit, Database as DatabaseIcon, Check, AlertCircle } from 'lucide-react';
@@ -7,7 +6,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-import { AddConnectionDialog } from './AddConnectionDialog';
+import api from '@/utils/api';
+import axios from 'axios';
 
 interface DatabaseConnection {
   id: string;
@@ -18,35 +18,41 @@ interface DatabaseConnection {
 }
 
 export const DatabaseConnectionsSection = () => {
-  // Mock data - in a real app, this would come from your API
-  const [connections, setConnections] = useState<DatabaseConnection[]>([
-    { 
-      id: '1', 
-      name: 'Production DB', 
-      type: 'postgres', 
-      status: 'connected',
-      host: 'db.example.com'
-    },
-    { 
-      id: '2', 
-      name: 'Analytics Database', 
-      type: 'mysql', 
-      status: 'connected',
-      host: 'analytics.example.com'
-    },
-    { 
-      id: '3', 
-      name: 'User Data', 
-      type: 'mongodb', 
-      status: 'error',
-      host: 'mongodb.example.com'
-    }
-  ]);
-
+  const [connections, setConnections] = useState<DatabaseConnection[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddConnectionDialogOpen, setIsAddConnectionDialogOpen] = useState(false);
   const [editingConnection, setEditingConnection] = useState<DatabaseConnection | null>(null);
   const [removingConnection, setRemovingConnection] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    fetchConnections();
+  }, []);
+
+  const fetchConnections = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get('/api/connections');
+      // Transform the API response to match our component's data structure
+      const connectionsData = response.data.map((conn: any) => ({
+        id: conn.id,
+        name: conn.name,
+        type: conn.type,
+        status: 'connected', // You might need to add a status check endpoint
+        host: conn.host || '[encrypted]'
+      }));
+      setConnections(connectionsData);
+    } catch (error) {
+      console.error('Error fetching connections:', error);
+      let errorMessage = "Failed to load database connections";
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -68,16 +74,24 @@ export const DatabaseConnectionsSection = () => {
     setIsAddConnectionDialogOpen(true);
   };
 
-  const handleRemoveConnection = (id: string) => {
+  const handleRemoveConnection = async (id: string) => {
     setIsDeleting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await api.delete(`/api/connections/${id}`);
       setConnections(connections.filter(conn => conn.id !== id));
       toast.success('Connection removed successfully');
+    } catch (error) {
+      console.error('Error removing connection:', error);
+      let errorMessage = "Failed to remove connection";
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      toast.error(errorMessage);
+    } finally {
       setRemovingConnection(null);
       setIsDeleting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -104,7 +118,11 @@ export const DatabaseConnectionsSection = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {connections.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading connections...</p>
+            </div>
+          ) : connections.length > 0 ? (
             <div className="space-y-2">
               {connections.map((connection) => (
                 <div
@@ -193,7 +211,13 @@ export const DatabaseConnectionsSection = () => {
 
       <AddConnectionDialog 
         open={isAddConnectionDialogOpen}
-        onOpenChange={setIsAddConnectionDialogOpen}
+        onOpenChange={(open) => {
+          setIsAddConnectionDialogOpen(open);
+          if (!open) {
+            // Refresh connections when dialog closes
+            fetchConnections();
+          }
+        }}
         editConnection={editingConnection}
       />
     </>
