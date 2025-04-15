@@ -1,11 +1,6 @@
-<<<<<<< HEAD
 
-import React, { useState } from 'react';
-import { Loader2, Send, MessageSquare, History, Settings, User, LogOut, ChevronDown, ChevronRight, CheckCircle, XCircle, Code, Database as DatabaseIcon, FileText } from 'lucide-react';
-=======
 import React, { useState, useEffect } from 'react';
-import { Loader2, Send, MessageSquare, History, Settings, User, LogOut } from 'lucide-react';
->>>>>>> 4684c61 (Backend DB connected)
+import { Loader2, Send, MessageSquare, History, Settings, User, LogOut, ChevronDown, ChevronRight, CheckCircle, XCircle, Code, Database as DatabaseIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -311,7 +306,52 @@ SELECT * FROM planets WHERE name = 'Earth';
     }
   };
 
-<<<<<<< HEAD
+  const handleConnectionAdded = (newConnection: DatabaseConnection) => {
+    setDatabases(prev => [...prev, newConnection]);
+  };
+
+  // Function to handle adding a new connection
+  async function onSubmitConnection(data: FormValues) {
+    setIsSubmitting(true);
+    
+    try {
+      const response = await api.post('/api/connections', data);
+      
+      // Create a formatted connection object with empty threads
+      const newConnection: DatabaseConnection = {
+        id: response.data.id,
+        name: response.data.name,
+        type: response.data.type,
+        threads: [
+          {
+            id: `thread-${response.data.id}-1`,
+            name: `Query ${response.data.name} Data`,
+            lastMessage: `Tell me about the data in ${response.data.name}`,
+            timestamp: new Date()
+          }
+        ]
+      };
+      
+      toast.success("Database connection added successfully");
+      form.reset();
+      setIsConnectionDialogOpen(false);
+      
+      // Add the new connection to state
+      setDatabases(prev => [...prev, newConnection]);
+    } catch (error) {
+      console.error('Error adding database connection:', error);
+      let errorMessage = "Failed to add database connection";
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   // Function to render message content based on type
   const renderMessageContent = (message: Message) => {
     if (message.type === 'code') {
@@ -365,55 +405,6 @@ SELECT * FROM planets WHERE name = 'Earth';
 
   return (
     <div className="flex min-h-screen bg-[#121212]">
-=======
-  const handleConnectionAdded = (newConnection: DatabaseConnection) => {
-    setDatabases(prev => [...prev, newConnection]);
-  };
-
-  // Function to handle adding a new connection
-  async function onSubmitConnection(data: FormValues) {
-    setIsSubmitting(true);
-    
-    try {
-      const response = await api.post('/api/connections', data);
-      
-      // Create a formatted connection object with empty threads
-      const newConnection: DatabaseConnection = {
-        id: response.data.id,
-        name: response.data.name,
-        type: response.data.type,
-        threads: [
-          {
-            id: `thread-${response.data.id}-1`,
-            name: `Query ${response.data.name} Data`,
-            lastMessage: `Tell me about the data in ${response.data.name}`,
-            timestamp: new Date()
-          }
-        ]
-      };
-      
-      toast.success("Database connection added successfully");
-      form.reset();
-      setIsConnectionDialogOpen(false);
-      
-      // Add the new connection to state
-      setDatabases(prev => [...prev, newConnection]);
-    } catch (error) {
-      console.error('Error adding database connection:', error);
-      let errorMessage = "Failed to add database connection";
-      if (axios.isAxiosError(error) && error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  return (
-    <div className="flex min-h-screen bg-queryio-background">
       {/* Connection Dialog */}
       <Dialog open={isConnectionDialogOpen} onOpenChange={setIsConnectionDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -558,7 +549,7 @@ SELECT * FROM planets WHERE name = 'Earth';
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="bg-white hover:bg-gray-200 text-queryio-background"
+                  className="bg-white hover:bg-gray-200 text-[#121212]"
                 >
                   {isSubmitting ? (
                     <>
@@ -575,7 +566,6 @@ SELECT * FROM planets WHERE name = 'Earth';
         </DialogContent>
       </Dialog>
 
->>>>>>> 4684c61 (Backend DB connected)
       <SidebarProvider>
         <Sidebar className="bg-[#0D0D0D] border-[#1E1E1E]">
           <SidebarContent>
@@ -678,31 +668,7 @@ SELECT * FROM planets WHERE name = 'Earth';
               {/* Messages */}
               <Card className="flex-1 mb-4 overflow-hidden bg-[#161616] border border-[#1E1E1E]">
                 <ScrollArea className="h-[calc(100vh-180px)] p-4">
-<<<<<<< HEAD
                   <div className="flex flex-col gap-6">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${
-                          message.sender === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[85%] rounded-lg ${
-                            message.sender === 'user'
-                              ? 'bg-[#1A1A1A] text-white p-4'
-                              : 'bg-[#161616] text-[#E0E0E0] p-4 border border-[#1E1E1E]'
-                          }`}
-                        >
-                          {renderMessageContent(message)}
-                          <p className="text-xs opacity-50 mt-2">
-                            {message.timestamp.toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-=======
-                  <div className="flex flex-col gap-4">
                     {isLoadingDatabases ? (
                       <div className="h-full flex items-center justify-center text-muted-foreground">
                         <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -716,7 +682,7 @@ SELECT * FROM planets WHERE name = 'Earth';
                         </p>
                         <Button 
                           onClick={() => setIsConnectionDialogOpen(true)}
-                          className="bg-white hover:bg-gray-200 text-queryio-background"
+                          className="bg-white hover:bg-gray-200 text-[#121212]"
                         >
                           Connect a Database
                         </Button>
@@ -737,15 +703,20 @@ SELECT * FROM planets WHERE name = 'Earth';
                           }`}
                         >
                           <div
-                            className={`max-w-[80%] p-3 rounded-lg ${
+                            className={`max-w-[85%] rounded-lg ${
                               message.sender === 'user'
-                                ? 'bg-secondary text-secondary-foreground'
-                                : 'bg-muted text-muted-foreground'
+                                ? 'bg-[#1A1A1A] text-white p-4'
+                                : 'bg-[#161616] text-[#E0E0E0] p-4 border border-[#1E1E1E]'
                             }`}
                           >
-                            {message.content}
+                            {renderMessageContent(message)}
+                            <p className="text-xs opacity-50 mt-2">
+                              {message.timestamp.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
                           </div>
->>>>>>> 4684c61 (Backend DB connected)
                         </div>
                       ))
                     )}
@@ -760,22 +731,13 @@ SELECT * FROM planets WHERE name = 'Earth';
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask anything about your database..."
-<<<<<<< HEAD
                   className="flex-1 bg-[#161616] border-[#1E1E1E] focus-visible:ring-1 focus-visible:ring-white/30 focus-visible:ring-offset-0"
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !inputMessage.trim()}
-                  className="bg-white hover:bg-gray-200 text-[#121212] px-4"
-=======
-                  className="flex-1 bg-card border-border"
                   disabled={isLoadingDatabases || databases.length === 0 || !activeThread}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={isLoading || !inputMessage.trim() || isLoadingDatabases || databases.length === 0 || !activeThread}
-                  className="bg-white hover:bg-gray-200 text-queryio-background px-4"
->>>>>>> 4684c61 (Backend DB connected)
+                  className="bg-white hover:bg-gray-200 text-[#121212] px-4"
                 >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
