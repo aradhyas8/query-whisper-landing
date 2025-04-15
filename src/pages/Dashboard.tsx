@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Loader2, Send, MessageSquare, History, Settings, User, LogOut, ChevronDown, ChevronRight, CheckCircle, XCircle, Code, Database as DatabaseIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import FadeIn from '@/components/FadeIn';
-import DatabaseSidebar from '@/components/DatabaseSidebar';
+import DatabaseSidebar from '@/components/database/DatabaseSidebar';
 import { DatabaseConnection, ChatThread } from '@/types/database';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
