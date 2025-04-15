@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Database, MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -350,19 +349,17 @@ const DatabaseSidebar = ({
           >
             {databases.map((db) => (
               <AccordionItem key={db.id} value={db.id} className="border-b-0">
-                <AccordionTrigger className="py-2 px-3 text-sm font-medium hover:bg-muted/50 hover:no-underline rounded-md group">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <Database className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{db.name}</span>
-                    </div>
+                <AccordionTrigger className="py-2 px-3 text-sm font-medium hover:bg-muted/50 hover:no-underline rounded-md group relative">
+                  <div className="flex items-center w-full">
+                    <Database className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="flex-1 text-left">{db.name}</span>
                     
-                    {/* Delete button */}
-                    {!db.isDefault && ( // Only show delete button for non-default databases
+                    {/* Delete button - Always visible */}
+                    {!db.isDefault && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-8"
+                        className="h-6 w-6 p-0.5 ml-2"
                         onClick={(e) => handleDeleteConnection(db.id, e)}
                         aria-label={`Delete ${db.name} connection`}
                       >
