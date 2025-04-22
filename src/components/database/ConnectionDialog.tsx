@@ -38,12 +38,18 @@ import { DatabaseConnection } from '@/types/database';
 import { databaseFormSchema, DatabaseFormValues } from './schema';
 
 interface ConnectionDialogProps {
+  open?: boolean; 
+  onOpenChange?: (open: boolean) => void;
   onConnectionAdded?: (connection: DatabaseConnection) => void;
 }
 
-const ConnectionDialog = ({ onConnectionAdded }: ConnectionDialogProps) => {
-  const [open, setOpen] = useState(false);
+const ConnectionDialog = ({ open, onOpenChange, onConnectionAdded }: ConnectionDialogProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Use either the controlled open state or internal state
+  const dialogOpen = open !== undefined ? open : isOpen;
+  const setDialogOpen = onOpenChange || setIsOpen;
   
   const form = useForm<DatabaseFormValues>({
     resolver: zodResolver(databaseFormSchema),
@@ -82,7 +88,7 @@ const ConnectionDialog = ({ onConnectionAdded }: ConnectionDialogProps) => {
       
       toast.success("Database connection added successfully");
       form.reset();
-      setOpen(false);
+      setDialogOpen(false);
       
       // Call the callback with the properly formatted connection
       if (onConnectionAdded) {
@@ -104,7 +110,7 @@ const ConnectionDialog = ({ onConnectionAdded }: ConnectionDialogProps) => {
   
   return (
     <div className="p-3">
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           <Button 
             variant="outline" 
@@ -256,7 +262,7 @@ const ConnectionDialog = ({ onConnectionAdded }: ConnectionDialogProps) => {
               />
               
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>

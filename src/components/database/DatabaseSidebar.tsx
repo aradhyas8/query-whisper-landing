@@ -65,7 +65,7 @@ const DatabaseSidebar = ({
       </Button>
       
       <ConnectionDialog 
-        isOpen={isConnectionDialogOpen} 
+        open={isConnectionDialogOpen} 
         onOpenChange={setIsConnectionDialogOpen}
         onConnectionAdded={onConnectionAdded} 
       />
