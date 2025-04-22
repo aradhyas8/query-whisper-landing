@@ -43,12 +43,10 @@ const DatabaseSidebar = ({
 
   // Handler for deleting a database connection
   const handleDeleteConnection = async (connectionId: string, event: React.MouseEvent) => {
-    // Stop event propagation to prevent expanding/collapsing the accordion item
     event.stopPropagation();
     
     const success = await deleteConnection(connectionId);
     
-    // Call the callback if provided and deletion was successful
     if (success && onConnectionDeleted) {
       onConnectionDeleted(connectionId);
     }
@@ -67,7 +65,7 @@ const DatabaseSidebar = ({
       </Button>
       
       <ConnectionDialog 
-        open={isConnectionDialogOpen} 
+        isOpen={isConnectionDialogOpen} 
         onOpenChange={setIsConnectionDialogOpen}
         onConnectionAdded={onConnectionAdded} 
       />

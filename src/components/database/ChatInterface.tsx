@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Send, Copy, CheckCircle, Loader2 } from 'lucide-react';
+import { Send, Copy, CheckCircle, Loader2, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
