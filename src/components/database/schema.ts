@@ -14,3 +14,13 @@ export const databaseFormSchema = z.object({
 });
 
 export type DatabaseFormValues = z.infer<typeof databaseFormSchema>;
+
+// Health status type
+export const ConnectionHealthStatus = {
+  HEALTHY: 'healthy',
+  WARNING: 'warning',
+  ERROR: 'error',
+  UNKNOWN: 'unknown'
+} as const;
+
+export type ConnectionHealth = typeof ConnectionHealthStatus[keyof typeof ConnectionHealthStatus];
